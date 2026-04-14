@@ -93,7 +93,7 @@ export default function Navbar() {
             className="font-orbitron"
             style={{ fontSize: '18px', fontWeight: '700', color: '#f0f0ff' }}
           >
-            Anime<span className="gradient-text">Stats</span>
+            Stat<span className="gradient-text">Senpai</span>
           </span>
         </NavLink>
 

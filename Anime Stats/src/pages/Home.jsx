@@ -2,7 +2,7 @@
  * Home.jsx
  * Landing page with trending characters grid, search, and infinite scroll
  */
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchTopCharacters, searchCharacters } from '../services/api';
 import CharacterCard from '../components/CharacterCard';
 import SkeletonCard from '../components/SkeletonCard';
@@ -16,7 +16,6 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const loaderRef = useRef(null);
   const isSearching = query.trim().length > 0;
 
   // Fetch characters (initial & pagination)
@@ -55,24 +54,13 @@ export default function Home() {
     loadCharacters(q, 1, true);
   }, [loadCharacters]);
 
-  // Infinite scroll observer
-  useEffect(() => {
-    if (!loaderRef.current || !hasMore || loading || loadingMore) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setPage(p => {
-            const nextPage = p + 1;
-            loadCharacters(query, nextPage, false);
-            return nextPage;
-          });
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(loaderRef.current);
-    return () => observer.disconnect();
-  }, [hasMore, loading, loadingMore, query, loadCharacters]);
+  // Handle load more
+  const handleLoadMore = () => {
+    if (loading || loadingMore || !hasMore) return;
+    const nextPage = page + 1;
+    setPage(nextPage);
+    loadCharacters(query, nextPage, false);
+  };
 
   return (
     <main
@@ -110,8 +98,8 @@ export default function Home() {
             marginBottom: '16px',
           }}
         >
-          <span className="gradient-text">Anime</span>
-          <span style={{ color: '#f0f0ff' }}> Stats</span>
+          <span className="gradient-text">Stat</span>
+          <span style={{ color: '#f0f0ff' }}>Senpai</span>
         </h1>
 
         <p
@@ -262,8 +250,37 @@ export default function Home() {
         </div>
       )}
 
-      {/* Infinite scroll loader */}
-      {!loading && hasMore && <div ref={loaderRef} style={{ height: '40px' }} />}
+      {/* Load more button */}
+      {!loading && hasMore && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '48px', marginBottom: '24px' }}>
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="btn-primary"
+            style={{
+              padding: '12px 40px',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              minWidth: '240px',
+              justifyContent: 'center',
+              opacity: loadingMore ? 0.7 : 1,
+            }}
+          >
+            {loadingMore ? (
+              <>
+                <div className="loader-dots">
+                  <span></span><span></span><span></span>
+                </div>
+                Loading Characters...
+              </>
+            ) : (
+              'Load More Characters'
+            )}
+          </button>
+        </div>
+      )}
 
       {/* End of results */}
       {!loading && !hasMore && characters.length > 0 && (
